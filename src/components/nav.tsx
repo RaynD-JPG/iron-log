@@ -15,7 +15,11 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav className="sticky bottom-0 z-10 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur">
+    <nav
+      className="sticky bottom-0 z-20 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur"
+      // Keep tabs above the iPhone home-indicator bar.
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="mx-auto flex w-full max-w-md items-stretch justify-between px-2">
         {items.map((item) => {
           const active =

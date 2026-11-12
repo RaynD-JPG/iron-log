@@ -162,7 +162,9 @@ export default function LogForm({
         type="button"
         onClick={handleSave}
         disabled={isPending}
-        className="sticky bottom-4 rounded-xl bg-emerald-500 px-4 py-4 text-base font-bold text-zinc-950 shadow-lg hover:bg-emerald-400 disabled:opacity-50"
+        className="sticky z-10 rounded-xl bg-emerald-500 px-4 py-4 text-base font-bold text-zinc-950 shadow-lg hover:bg-emerald-400 disabled:opacity-50"
+        // Float just above the bottom nav (plus the iPhone home-indicator).
+        style={{ bottom: "calc(4.5rem + env(safe-area-inset-bottom))" }}
       >
         {isPending ? "Saving…" : "Finish & save workout"}
       </button>

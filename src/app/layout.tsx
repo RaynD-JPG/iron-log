@@ -27,16 +27,20 @@ export const viewport: Viewport = {
   themeColor: "#0a0a0a",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
+  // Let content extend into the safe areas so env(safe-area-inset-*) works
+  // for the notch and home-indicator on iPhone.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/* min-h-dvh = dynamic viewport height: tracks the real visible area as
+          the mobile address bar shows/hides, avoiding gaps and cut-off content. */}
+      <body className="flex min-h-dvh flex-col">{children}</body>
     </html>
   );
 }

@@ -16,8 +16,12 @@ export default async function AppLayout({
   if (!user) redirect("/login");
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-zinc-950 text-zinc-50">
-      <div className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-6 pt-8">
+    <div className="flex min-h-dvh flex-1 flex-col bg-zinc-950 text-zinc-50">
+      <div
+        className="mx-auto flex w-full max-w-md flex-1 flex-col px-5 pb-6"
+        // Pad the top for the iPhone status bar / notch (safe-area inset).
+        style={{ paddingTop: "calc(2rem + env(safe-area-inset-top))" }}
+      >
         {children}
       </div>
       <Nav />
