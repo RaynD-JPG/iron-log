@@ -1,4 +1,4 @@
--- Gym Tracker — database schema
+-- IronLog — database schema
 -- Paste this whole file into the Supabase SQL Editor (Dashboard → SQL Editor → New query) and run it.
 -- It is safe to re-run: it uses "if not exists" and recreates policies.
 

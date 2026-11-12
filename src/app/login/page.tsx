@@ -57,7 +57,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <span className="text-sm font-medium uppercase tracking-widest text-emerald-400">
-            Gym Tracker
+            IronLog
           </span>
           <h1 className="mt-2 text-2xl font-bold">
             {mode === "signin" ? "Welcome back" : "Create your account"}

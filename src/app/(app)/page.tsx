@@ -25,7 +25,7 @@ export default async function Dashboard() {
       <header className="flex items-start justify-between gap-4">
         <div>
           <span className="text-xs font-medium uppercase tracking-widest text-emerald-400">
-            Gym Tracker
+            IronLog
           </span>
           <h1 className="mt-1 text-2xl font-bold">Ready to train?</h1>
           <p className="mt-1 text-sm text-zinc-500">{user?.email}</p>

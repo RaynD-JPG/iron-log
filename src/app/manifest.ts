@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Gym Tracker",
-    short_name: "Gym Tracker",
+    name: "IronLog",
+    short_name: "IronLog",
     description: "Track your workout splits, sets, reps and weight over time.",
     start_url: "/",
     display: "standalone",
