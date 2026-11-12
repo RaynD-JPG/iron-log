@@ -6,7 +6,8 @@ import type {
   Exercise,
   DayExerciseWithExercise,
 } from "@/lib/types";
-import { addExerciseToDay, removeExerciseFromDay } from "../actions";
+import AddExerciseToDay from "@/components/add-exercise-to-day";
+import RemoveFromDayButton from "@/components/remove-from-day-button";
 
 export default async function DayDetailPage({
   params,
@@ -82,16 +83,7 @@ export default async function DayDetailPage({
                     </p>
                   )}
                 </div>
-                <form action={removeExerciseFromDay}>
-                  <input type="hidden" name="id" value={de.id} />
-                  <input type="hidden" name="day_id" value={day.id} />
-                  <button
-                    type="submit"
-                    className="text-xs text-zinc-500 hover:text-red-400"
-                  >
-                    Remove
-                  </button>
-                </form>
+                <RemoveFromDayButton id={de.id} dayId={day.id} />
               </li>
             ))}
           </ul>
@@ -102,46 +94,7 @@ export default async function DayDetailPage({
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-400">
           Add an exercise
         </h2>
-        {allExercises.length === 0 ? (
-          <p className="text-sm text-zinc-500">
-            You have no exercises yet.{" "}
-            <Link href="/exercises" className="text-emerald-400">
-              Create some first →
-            </Link>
-          </p>
-        ) : available.length === 0 ? (
-          <p className="text-sm text-zinc-500">
-            All your exercises are already in this day.
-          </p>
-        ) : (
-          <form
-            action={addExerciseToDay}
-            className="flex gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 p-3"
-          >
-            <input type="hidden" name="day_id" value={day.id} />
-            <select
-              name="exercise_id"
-              required
-              defaultValue=""
-              className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-3 text-base outline-none focus:border-emerald-500"
-            >
-              <option value="" disabled>
-                Choose exercise…
-              </option>
-              {available.map((ex) => (
-                <option key={ex.id} value={ex.id}>
-                  {ex.name}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="rounded-lg bg-emerald-500 px-4 py-3 font-semibold text-zinc-950 hover:bg-emerald-400"
-            >
-              Add
-            </button>
-          </form>
-        )}
+        <AddExerciseToDay dayId={day.id} available={available} />
       </section>
     </div>
   );

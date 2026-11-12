@@ -1,85 +1,115 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export async function createDay(formData: FormData) {
-  const name = String(formData.get("name") ?? "").trim();
-  if (!name) return;
+export type ActionResult = { ok: boolean; error?: string; id?: string };
 
+async function requireUser() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
-
-  await supabase.from("workout_days").insert({ user_id: user.id, name });
-  revalidatePath("/days");
+  return { supabase, user };
 }
 
-export async function deleteDay(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  if (!id) return;
+export async function createDay(name: string): Promise<ActionResult> {
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "Enter a name." };
 
-  const supabase = await createClient();
-  await supabase.from("workout_days").delete().eq("id", id);
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "Not signed in." };
+
+  const { data, error } = await supabase
+    .from("workout_days")
+    .insert({ user_id: user.id, name: trimmed })
+    .select("id")
+    .single();
+
+  if (error) return { ok: false, error: error.message };
   revalidatePath("/days");
+  revalidatePath("/");
+  return { ok: true, id: data.id };
 }
 
-export async function addExerciseToDay(formData: FormData) {
-  const dayId = String(formData.get("day_id") ?? "");
-  const exerciseId = String(formData.get("exercise_id") ?? "");
-  if (!dayId || !exerciseId) return;
+export async function deleteDay(id: string): Promise<ActionResult> {
+  if (!id) return { ok: false, error: "Missing id." };
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "Not signed in." };
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
+  const { error } = await supabase.from("workout_days").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/days");
+  revalidatePath("/");
+  return { ok: true };
+}
 
-  // Place the new exercise at the end of the list.
+// Create a brand-new exercise AND add it to this day in one step.
+export async function createExerciseInDay(
+  dayId: string,
+  name: string,
+  machine: string,
+): Promise<ActionResult> {
+  const trimmed = name.trim();
+  if (!dayId) return { ok: false, error: "Missing day." };
+  if (!trimmed) return { ok: false, error: "Enter an exercise name." };
+
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "Not signed in." };
+
+  const { data: ex, error: exError } = await supabase
+    .from("exercises")
+    .insert({
+      user_id: user.id,
+      name: trimmed,
+      machine: machine.trim() || null,
+    })
+    .select("id")
+    .single();
+  if (exError) return { ok: false, error: exError.message };
+
+  const link = await addExistingExerciseToDay(dayId, ex.id);
+  return link;
+}
+
+// Add an exercise you already created to this day.
+export async function addExistingExerciseToDay(
+  dayId: string,
+  exerciseId: string,
+): Promise<ActionResult> {
+  if (!dayId || !exerciseId) return { ok: false, error: "Missing data." };
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "Not signed in." };
+
   const { count } = await supabase
     .from("day_exercises")
     .select("*", { count: "exact", head: true })
     .eq("workout_day_id", dayId);
 
-  await supabase.from("day_exercises").insert({
+  const { error } = await supabase.from("day_exercises").insert({
     user_id: user.id,
     workout_day_id: dayId,
     exercise_id: exerciseId,
     position: count ?? 0,
   });
+  if (error) return { ok: false, error: error.message };
 
   revalidatePath(`/days/${dayId}`);
+  return { ok: true };
 }
 
-export async function removeExerciseFromDay(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  const dayId = String(formData.get("day_id") ?? "");
-  if (!id) return;
+// Remove an exercise from a day (keeps the exercise itself + its history).
+export async function removeDayExercise(
+  id: string,
+  dayId: string,
+): Promise<ActionResult> {
+  if (!id) return { ok: false, error: "Missing id." };
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "Not signed in." };
 
-  const supabase = await createClient();
-  await supabase.from("day_exercises").delete().eq("id", id);
+  const { error } = await supabase.from("day_exercises").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
   revalidatePath(`/days/${dayId}`);
-}
-
-export async function createDayAndRedirect(formData: FormData) {
-  const name = String(formData.get("name") ?? "").trim();
-  if (!name) return;
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
-
-  const { data } = await supabase
-    .from("workout_days")
-    .insert({ user_id: user.id, name })
-    .select("id")
-    .single();
-
-  revalidatePath("/days");
-  if (data?.id) redirect(`/days/${data.id}`);
+  return { ok: true };
 }

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { WorkoutDay } from "@/lib/types";
-import { createDayAndRedirect, deleteDay } from "./actions";
+import CreateDayForm from "@/components/create-day-form";
+import DeleteDayButton from "@/components/delete-day-button";
 
 export default async function DaysPage() {
   const supabase = await createClient();
@@ -20,23 +21,7 @@ export default async function DaysPage() {
         </p>
       </header>
 
-      <form
-        action={createDayAndRedirect}
-        className="flex gap-2 rounded-xl border border-zinc-800 bg-zinc-900/50 p-3"
-      >
-        <input
-          name="name"
-          required
-          placeholder="New day name (e.g. Push)"
-          className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-base outline-none focus:border-emerald-500"
-        />
-        <button
-          type="submit"
-          className="rounded-lg bg-emerald-500 px-4 py-3 font-semibold text-zinc-950 hover:bg-emerald-400"
-        >
-          Add
-        </button>
-      </form>
+      <CreateDayForm />
 
       {days.length === 0 ? (
         <p className="text-sm text-zinc-500">
@@ -59,15 +44,7 @@ export default async function DaysPage() {
                 >
                   Start
                 </Link>
-                <form action={deleteDay}>
-                  <input type="hidden" name="id" value={day.id} />
-                  <button
-                    type="submit"
-                    className="text-xs text-zinc-500 hover:text-red-400"
-                  >
-                    Delete
-                  </button>
-                </form>
+                <DeleteDayButton id={day.id} name={day.name} />
               </div>
             </li>
           ))}
