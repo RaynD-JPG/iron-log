@@ -93,4 +93,18 @@ Recommendation: actually use it at the gym after Phase 4 before building more.
     auth pages render dynamically without extra Suspense/cache boilerplate.
   - **User action still required** before login works: follow `docs/PHASE2-SETUP.md` — create the
     Supabase project, run the schema SQL, and paste URL + anon key into `.env.local`.
-- **Next up — Phase 3 (Build splits)**: CRUD for exercises and workout days.
+- **Phases 3–6 — Core app (code ✅, 2026-11-12)**: all feature code complete and building green.
+  - **Routing**: authenticated pages live under the `src/app/(app)/` route group, which has a
+    layout enforcing login + a bottom `Nav` (`src/components/nav.tsx`). `/login` stays outside it.
+  - **Phase 3**: exercises CRUD (`(app)/exercises`), workout days + day-detail with add/remove
+    exercises (`(app)/days`, `(app)/days/[id]`). Mutations via Server Actions (`actions.ts` files).
+  - **Phase 4**: logging at `(app)/log/[dayId]` — server page pre-fills from the last session;
+    interactive client form `src/components/log-form.tsx`; `saveWorkout` creates a session + sets.
+  - **Phase 5**: history list/detail (`(app)/history`), progress charts (`(app)/progress`) using
+    Recharts (`src/components/exercise-chart.tsx`, `exercise-picker.tsx`) — top weight per day.
+  - **Phase 6 (PWA)**: `src/app/icon.tsx`, `apple-icon.tsx` (generated via `next/og`),
+    `src/app/manifest.ts`, and `appleWebApp` metadata for iOS "Add to Home Screen".
+- **Still required from the user before anything runs**: do `docs/PHASE2-SETUP.md` (create Supabase
+  project, run `supabase/schema.sql`, fill `.env.local`). Then deploy to Vercel (set the same two
+  env vars in the Vercel project) to get an iPhone-reachable URL.
+- **Next up — Phase 7 (Deploy)**: push to GitHub (done after this), then connect Vercel.

@@ -15,6 +15,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Gym Tracker",
   description: "Track your workout splits, sets, reps and weight over time.",
+  // Enables full-screen, app-like behavior when added to the iOS home screen.
+  appleWebApp: {
+    capable: true,
+    title: "Gym Tracker",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {
