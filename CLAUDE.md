@@ -72,6 +72,25 @@ Recommendation: actually use it at the gym after Phase 4 before building more.
 - Keep secrets (Supabase keys) in `.env.local`; never commit them. Use `NEXT_PUBLIC_` prefix only for the anon key / public URL.
 - Match existing file style and structure when adding code.
 
+## How to run
+
+- `npm run dev` — local dev server at http://localhost:3000
+- `npm run build` — production build (also runs TypeScript + ESLint checks)
+- Stack installed: Next.js 16.4.6, React 19.3, Tailwind v4, App Router, `src/` dir, `@/*` alias.
+
 ## Status
 
-Planning complete. No code scaffolded yet — next step is Phase 1.
+- **Phase 1 — Foundation ✅ (2026-11-12)**: Next.js + TS + Tailwind scaffolded; mobile-first
+  landing placeholder; iOS Safari metadata/viewport; git initialized; first commit made;
+  build + dev server verified. Not yet deployed to Vercel.
+- **Current focus: personal use only.** Multi-user/public is a possible future step — keep the
+  data model user-keyed so it stays easy, but do not build onboarding/payments/landing yet.
+- **Phase 2 — Accounts (code ✅, 2026-11-12)**: Supabase packages installed; browser/server
+  clients (`src/lib/supabase/`); session refresh + route guard via `src/proxy.ts` (Next 16
+  renamed `middleware`→`proxy`); email/password login+signup at `/login`; auth callback &
+  signout routes; protected home. Schema in `supabase/schema.sql` (tables + RLS). Build green.
+  - **Note:** `cacheComponents`/`partialPrefetching` disabled in `next.config.ts` so cookie-based
+    auth pages render dynamically without extra Suspense/cache boilerplate.
+  - **User action still required** before login works: follow `docs/PHASE2-SETUP.md` — create the
+    Supabase project, run the schema SQL, and paste URL + anon key into `.env.local`.
+- **Next up — Phase 3 (Build splits)**: CRUD for exercises and workout days.

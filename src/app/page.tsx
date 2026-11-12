@@ -1,4 +1,15 @@
-export default function Home() {
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Middleware already guards this, but double-check for safety.
+  if (!user) redirect("/login");
+
   return (
     <div className="flex flex-1 flex-col bg-zinc-950 text-zinc-50">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-10 px-6 py-16">
@@ -7,11 +18,10 @@ export default function Home() {
             Gym Tracker
           </span>
           <h1 className="text-4xl font-bold leading-tight tracking-tight">
-            Track every set, rep &amp; PR.
+            You&apos;re in. Let&apos;s lift.
           </h1>
           <p className="text-lg leading-relaxed text-zinc-400">
-            Build your splits, log your lifts, and watch your strength climb
-            workout after workout.
+            Signed in as <span className="text-zinc-200">{user.email}</span>
           </p>
         </header>
 
@@ -22,11 +32,20 @@ export default function Home() {
         </section>
 
         <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 text-sm text-zinc-500">
-          <p className="font-medium text-zinc-300">Phase 1 — Foundation ✅</p>
+          <p className="font-medium text-zinc-300">Phase 2 — Accounts ✅</p>
           <p className="mt-1">
-            App scaffolded and running. Up next: accounts &amp; the database.
+            Login &amp; database are wired up. Up next: building splits &amp; exercises.
           </p>
         </div>
+
+        <form action="/auth/signout" method="post">
+          <button
+            type="submit"
+            className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-700 hover:text-zinc-100"
+          >
+            Sign out
+          </button>
+        </form>
       </main>
     </div>
   );
