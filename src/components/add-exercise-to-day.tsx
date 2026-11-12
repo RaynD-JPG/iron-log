@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   createExerciseInDay,
-  addExistingExerciseToDay,
+  addExistingExercisesToDay,
 } from "@/app/(app)/days/actions";
 import type { Exercise } from "@/lib/types";
 
@@ -18,6 +18,7 @@ export default function AddExerciseToDay({
   const router = useRouter();
   const [name, setName] = useState("");
   const [machine, setMachine] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [added, setAdded] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -25,6 +26,15 @@ export default function AddExerciseToDay({
   function flashAdded(label: string) {
     setAdded(label);
     setTimeout(() => setAdded(null), 2500);
+  }
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   function submitNew(e: React.FormEvent) {
@@ -45,16 +55,19 @@ export default function AddExerciseToDay({
     });
   }
 
-  function addExisting(exerciseId: string, label: string) {
-    if (isPending || !exerciseId) return;
+  function addSelected() {
+    if (isPending || selected.size === 0) return;
     setError(null);
+    const ids = [...selected];
+    const count = ids.length;
     startTransition(async () => {
-      const res = await addExistingExerciseToDay(dayId, exerciseId);
+      const res = await addExistingExercisesToDay(dayId, ids);
       if (res.ok) {
-        flashAdded(label);
+        setSelected(new Set());
+        flashAdded(`${count} exercise${count > 1 ? "s" : ""}`);
         router.refresh();
       } else {
-        setError(res.error ?? "Could not add exercise.");
+        setError(res.error ?? "Could not add exercises.");
       }
     });
   }
@@ -85,31 +98,58 @@ export default function AddExerciseToDay({
           {isPending ? "Adding…" : "Add to this day"}
         </button>
         {added && (
-          <p className="text-sm font-medium text-emerald-400">
-            ✓ Added {added}
-          </p>
+          <p className="text-sm font-medium text-emerald-400">✓ Added {added}</p>
         )}
         {error && <p className="text-sm text-red-400">{error}</p>}
       </form>
 
       {available.length > 0 && (
-        <div className="flex flex-col gap-2 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
+        <div className="flex flex-col gap-3 rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-            Or reuse one you already made
+            Or reuse ones you already made — tick several
           </p>
-          <div className="flex flex-wrap gap-2">
-            {available.map((ex) => (
-              <button
-                key={ex.id}
-                type="button"
-                disabled={isPending}
-                onClick={() => addExisting(ex.id, ex.name)}
-                className="rounded-full border border-zinc-700 px-3 py-1.5 text-sm text-zinc-300 hover:border-emerald-500 hover:text-emerald-400 disabled:opacity-50"
-              >
-                + {ex.name}
-              </button>
-            ))}
+          <div className="flex flex-col gap-1">
+            {available.map((ex) => {
+              const checked = selected.has(ex.id);
+              return (
+                <label
+                  key={ex.id}
+                  className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2.5 transition-colors ${
+                    checked
+                      ? "border-emerald-500 bg-emerald-500/10"
+                      : "border-zinc-800 hover:border-zinc-700"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggle(ex.id)}
+                    className="h-5 w-5 accent-emerald-500"
+                  />
+                  <span className="flex-1">
+                    <span className="font-medium">{ex.name}</span>
+                    {ex.machine && (
+                      <span className="ml-2 text-xs text-zinc-500">
+                        {ex.machine}
+                      </span>
+                    )}
+                  </span>
+                </label>
+              );
+            })}
           </div>
+          <button
+            type="button"
+            onClick={addSelected}
+            disabled={isPending || selected.size === 0}
+            className="rounded-lg bg-zinc-100 px-4 py-3 font-semibold text-zinc-950 hover:bg-white disabled:opacity-40"
+          >
+            {isPending
+              ? "Adding…"
+              : selected.size === 0
+                ? "Select exercises to add"
+                : `Add selected (${selected.size})`}
+          </button>
         </div>
       )}
     </div>

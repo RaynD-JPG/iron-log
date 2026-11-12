@@ -98,6 +98,60 @@ export async function addExistingExerciseToDay(
   return { ok: true };
 }
 
+// Rename / update an exercise. Applies everywhere the exercise is used.
+export async function updateExercise(
+  id: string,
+  name: string,
+  machine: string,
+): Promise<ActionResult> {
+  const trimmed = name.trim();
+  if (!id) return { ok: false, error: "Missing id." };
+  if (!trimmed) return { ok: false, error: "Enter a name." };
+
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "Not signed in." };
+
+  const { error } = await supabase
+    .from("exercises")
+    .update({ name: trimmed, machine: machine.trim() || null })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/days", "layout");
+  return { ok: true };
+}
+
+// Add several existing exercises to a day at once.
+export async function addExistingExercisesToDay(
+  dayId: string,
+  exerciseIds: string[],
+): Promise<ActionResult> {
+  if (!dayId) return { ok: false, error: "Missing day." };
+  if (!exerciseIds.length) return { ok: false, error: "Select at least one." };
+
+  const { supabase, user } = await requireUser();
+  if (!user) return { ok: false, error: "Not signed in." };
+
+  const { count } = await supabase
+    .from("day_exercises")
+    .select("*", { count: "exact", head: true })
+    .eq("workout_day_id", dayId);
+
+  const start = count ?? 0;
+  const rows = exerciseIds.map((exercise_id, i) => ({
+    user_id: user.id,
+    workout_day_id: dayId,
+    exercise_id,
+    position: start + i,
+  }));
+
+  const { error } = await supabase.from("day_exercises").insert(rows);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath(`/days/${dayId}`);
+  return { ok: true };
+}
+
 // Remove an exercise from a day (keeps the exercise itself + its history).
 export async function removeDayExercise(
   id: string,

@@ -7,7 +7,7 @@ import type {
   DayExerciseWithExercise,
 } from "@/lib/types";
 import AddExerciseToDay from "@/components/add-exercise-to-day";
-import RemoveFromDayButton from "@/components/remove-from-day-button";
+import DayExerciseItem from "@/components/day-exercise-item";
 
 export default async function DayDetailPage({
   params,
@@ -71,20 +71,14 @@ export default async function DayDetailPage({
         ) : (
           <ul className="flex flex-col gap-2">
             {dayExercises.map((de) => (
-              <li
+              <DayExerciseItem
                 key={de.id}
-                className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/40 px-4 py-3"
-              >
-                <div>
-                  <p className="font-semibold">{de.exercise.name}</p>
-                  {de.exercise.machine && (
-                    <p className="text-xs text-zinc-500">
-                      {de.exercise.machine}
-                    </p>
-                  )}
-                </div>
-                <RemoveFromDayButton id={de.id} dayId={day.id} />
-              </li>
+                linkId={de.id}
+                exerciseId={de.exercise_id}
+                dayId={day.id}
+                name={de.exercise.name}
+                machine={de.exercise.machine}
+              />
             ))}
           </ul>
         )}
